@@ -96,6 +96,7 @@ let score = 0, lives = 3, level = 1;
 let gameOver = false, gamePaused = false;
 let keys = {};
 let enemySpawnTimer = 0;
+let enemiesToSpawn = 0;
 let invincibleTimer = 0;
 let levelTransition = 0;
 
@@ -487,6 +488,7 @@ function resetGame() {
   generateLevel();
   updateUI();
   enemySpawnTimer = 0;
+  enemiesToSpawn = 2 + level;
 }
 
 function nextLevel() {
@@ -500,6 +502,7 @@ function nextLevel() {
   generateLevel();
   updateUI();
   enemySpawnTimer = 0;
+  enemiesToSpawn = 2 + level;
 }
 
 // ===================== Init =====================
@@ -541,11 +544,12 @@ function update() {
   // Count alive enemies
   let aliveEnemies = enemies.filter(e => e.alive).length;
 
-  // Spawn enemies only if enemies are still alive (don't spawn more after clearing wave)
+  // Spawn enemies from this wave's quota
   let maxEnemies = 2 + level;
   enemySpawnTimer++;
-  if (aliveEnemies > 0 && aliveEnemies < maxEnemies && enemySpawnTimer > 120) {
+  if (enemiesToSpawn > 0 && enemySpawnTimer > 120) {
     spawnEnemy();
+    enemiesToSpawn--;
     enemySpawnTimer = 0;
   }
 
@@ -563,10 +567,10 @@ function update() {
   for (let p of particles) p.update();
   particles = particles.filter(p => p.life > 0);
 
-  // Check level complete — all enemies dead, no spawns pending
-  if (enemies.length === 0 && aliveEnemies === 0 && levelTransition === 0) {
+  // Check level complete — all enemies dead and wave quota exhausted
+  if (enemies.length === 0 && aliveEnemies === 0 && enemiesToSpawn === 0 && levelTransition === 0) {
     if (enemySpawnTimer > 90) {
-      levelTransition = 60; // Show "level complete" for 1 second
+      levelTransition = 60;
     }
   }
 }
